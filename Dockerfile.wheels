@@ -1,0 +1,209 @@
+# An image for building manylinux1 wheels equivalent to those that
+# https://github.com/sgillies/frs-wheel-builds makes for macosx.
+#
+# TODO: Figure out how to make the builds for osx!
+#
+# Note well: a very limited set of format drivers are included in these
+# wheels. See the GDAL configuration below for details.
+
+FROM quay.io/pypa/manylinux1_x86_64
+
+RUN sed -i 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf
+#    && sed -i 's/mirrorlist/#mirrorlist/' /etc/yum.repos.d/CentOS-Base.repo 
+#    && sed -i 's|#baseurl=http://mirror.centos.org/centos/$releasever|baseurl=http://vault.centos.org/5.11|' /etc/yum.repos.d/CentOS-Base.repo
+
+RUN yum update -y && yum install -y curl-devel json-c-devel zlib-devel libtiff-devel
+
+
+RUN mkdir -p /src
+
+ENV PATH="/install/gdal/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/install/gdal/lib:${LD_LIBRARY_PATH}"
+
+RUN cd /src \
+    && curl -f -L -O https://download.osgeo.org/libtiff/tiff-4.1.0.tar.gz \
+    && tar -xzf tiff-4.1.0.tar.gz \
+    && cd tiff-4.1.0 \
+    && ./configure \
+    && make \
+    && make install
+
+RUN mkdir -p /src \
+    && cd /src \
+    && curl -f -L -O https://www.openssl.org/source/openssl-1.0.2o.tar.gz \
+    && echo "ec3f5c9714ba0fd45cb4e087301eb1336c317e0d20b575a125050470e8089e4d  openssl-1.0.2o.tar.gz" > checksum \
+    && sha256sum -c checksum \
+    && tar zxf openssl-1.0.2o.tar.gz \
+    && cd /src/openssl-1.0.2o \
+    && ./config no-shared no-ssl2 no-async -fPIC -O2 \
+    && make -j 4 \
+    && make install \
+    && rm -rf /src
+
+# Install curl
+RUN mkdir -p /src \
+    && cd /src \
+    && curl -f -L -O http://curl.askapache.com/download/curl-7.59.0.tar.bz2 \
+    && tar jxf curl-7.59.0.tar.bz2 \
+    && cd /src/curl-7.59.0 \
+    && LIBS=-ldl CFLAGS="-O2 -Wl,-S" ./configure --with-ssl=/usr/local/ssl \
+    && make -j 4 \
+    && make install \
+    && rm -rf /src
+
+# Install geos
+RUN mkdir -p /src \
+    && cd /src \
+    && curl -f -L -O http://download.osgeo.org/geos/geos-3.8.1.tar.bz2 \
+    && tar jxf geos-3.8.1.tar.bz2 \
+    && cd /src/geos-3.8.1 \
+    && CFLAGS="-O2 -Wl,-S" CXXFLAGS="-O2 -Wl,-S" ./configure \
+    && make -j 4 \
+    && make install \
+    && rm -rf /src
+
+# Install jasper
+RUN mkdir -p /src \
+    && cd /src \
+    && curl -f -L -O http://download.osgeo.org/gdal/jasper-1.900.1.uuid.tar.gz \
+    && tar xzf jasper-1.900.1.uuid.tar.gz \
+    && cd /src/jasper-1.900.1.uuid \
+    && ./configure --disable-debug --enable-shared \
+    && make -j 4 \
+    && make install \
+    && rm -rf /src
+
+# proj4
+RUN mkdir -p /src \
+    && cd /src \
+    && curl -f -L -O http://download.osgeo.org/proj/proj-7.1.0.tar.gz \
+    && tar xzf proj-7.1.0.tar.gz \
+    && cd /src/proj-7.1.0 \
+    && ./configure CFLAGS="-O2 -Wl,-S" \
+    && make -j 4 \
+    && make install \
+    && rm -rf /src
+
+# cmake
+RUN cd /usr/local/src \
+    && curl -f -L -O http://www.cmake.org/files/v3.12/cmake-3.12.4.tar.gz \
+    && tar xzf cmake-3.12.4.tar.gz \
+    && cd cmake-3.12.4 \
+    && ./bootstrap --prefix=/usr/local/cmake \
+    && make -j 4; make install
+
+# openjpeg
+RUN mkdir -p /src \
+    && cd /src \
+    && curl -f -L -O https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz \
+    && tar xzf v2.3.1.tar.gz \
+    && cd /src/openjpeg-2.3.1 \
+    && mkdir -p build \
+    && cd build \
+    && /usr/local/cmake/bin/cmake .. -DBUILD_THIRDPARTY:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && make -j 4 install \
+    && make clean \
+    && rm -rf /src
+
+# hdf
+RUN cd /usr/local/src \
+    && curl -f -L -O https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz \
+    && tar xzf hdf5-1.12.0.tar.gz \
+    && cd hdf5-1.12.0 \
+    && ./configure --prefix=/usr/local --enable-shared --enable-build-mode=production CFLAGS="-O2 -Wl,-S" \
+    && make -j 4 \
+    && make install
+
+## netcdf
+RUN cd /usr/local/src \
+    && curl -f -L -O ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.6.1.tar.gz \
+    && tar xzf netcdf-4.6.1.tar.gz \
+    && cd netcdf-4.6.1 \
+    && CFLAGS="-I/usr/local/include -O2 -Wl,-S" CXXFLAGS="-I/usr/local/include -O2 -Wl,-S" LDFLAGS="-L/usr/local/lib" ./configure \
+    && make -j 4 \
+    && make install
+
+## expat
+RUN cd /usr/local/src \
+    && curl -f -L -O https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.bz2 \
+    && tar xjf expat-2.2.9.tar.bz2 \
+    && cd expat-2.2.9 \
+    && CFLAGS="-O2 -Wl,-S" ./configure --prefix=/usr/local \
+    && make -j 4 \
+    && make install
+
+## webp
+RUN cd /usr/local/src \
+    && curl -f -L -O https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz \
+    && tar xzf libwebp-1.1.0.tar.gz \
+    && cd libwebp-1.1.0 \
+    && CFLAGS="-O2 -Wl,-S" ./configure --prefix=/usr/local \
+    && make -j 4 \
+    && make install
+
+# gdal
+RUN mkdir -p /src \
+    && mkdir -p /install/gdal \
+    && cd /src \
+    && curl -f -L -O http://download.osgeo.org/gdal/3.1.4/gdal-3.1.4.tar.gz \
+    && tar xzf gdal-3.1.4.tar.gz \
+    && cd /src/gdal-3.1.4 \
+    && CFLAGS="-O2 -Wl,-S" CXXFLAGS="-O2 -Wl,-S" ./configure --prefix=/install/gdal \
+        --with-threads \
+        --disable-debug \
+        --disable-static \
+        --without-grass \
+        --without-libgrass \
+        --without-jpeg12 \
+        --with-libtiff \
+        --with-jpeg \
+        --with-gif \
+        --with-png \
+        --with-webp \
+        --with-geotiff=internal \
+        --with-sqlite3=/usr \
+        --with-pcraster=internal \
+        --with-pcidsk=internal \
+        --with-bsb \
+        --with-grib \
+        --with-pam \
+        --with-geos=/usr/local/bin/geos-config \
+        --with-static-proj4=/usr/local \
+        --with-expat=/usr/local \
+        --with-libjson-c \
+        --with-libiconv-prefix=/usr \
+        --with-libz=/usr \
+        --with-curl=/usr/local/bin/curl-config \
+        --with-netcdf=/usr/local/netcdf \
+        --with-openjpeg \
+        --with-jasper=/usr/local \
+        --without-python \
+        --without-hdf4 \
+        --without-hdf5 \
+    && make -j 4 \
+    && make install
+
+# Bake dev requirements into the Docker image for faster builds
+ADD requirements.txt /tmp/requirements.txt
+RUN for PYBIN in /opt/python/*/bin; do \
+        if [[ $PYBIN == *"26"* ]]; then continue; fi; \
+        if [[ $PYBIN == *"27"* ]]; then continue; fi; \
+        if [[ $PYBIN == *"33"* ]]; then continue; fi; \
+        if [[ $PYBIN == *"35"* ]]; then continue; fi; \
+        if [[ $PYBIN == *"38"* ]]; then continue; fi; \
+        if [[ $PYBIN == *"39"* ]]; then continue; fi; \
+        $PYBIN/pip install -U pip ; \
+        $PYBIN/pip install -r /tmp/requirements.txt ; \
+    done
+
+# Replace SWIG's setup.py with this modified one, which gets numpy in
+# there as a dependency.
+ADD setup.py /src/gdal-3.1.4/swig/python/setup.py
+
+# Replace the osgeo module __init__.py with this modified one, which
+# sets the GDAL_DATA and PROJ_LIB variables on import to where they've
+# been copied to.
+ADD gdalinit.py /src/gdal-3.1.4/swig/python/osgeo/__init__.py
+
+WORKDIR /io
+CMD ["/io/build-linux-wheels.sh"]
