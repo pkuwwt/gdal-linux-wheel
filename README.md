@@ -1,8 +1,6 @@
 # GDAL Python Bindings Via *manylinux* Wheels
 
-This project is based on [youngpm
-/
-gdalmanylinux](https://github.com/youngpm/gdalmanylinux) but provides precompiled GDAL wheels ready to use in both Python and C/C++ projects (Linux only)
+This project is based on [youngpm/gdalmanylinux](https://github.com/youngpm/gdalmanylinux) but provides precompiled GDAL wheels ready to use in both Python and C/C++ projects (Linux only)
 
 ## Download precompiled wheels
 Go to releases and find tarball needed. Download it.
