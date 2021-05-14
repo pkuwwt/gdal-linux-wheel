@@ -3,7 +3,7 @@
 This project is based on [youngpm/gdalmanylinux](https://github.com/youngpm/gdalmanylinux) but provides precompiled GDAL wheels ready to use in both Python and C/C++ projects (Linux only)
 
 ## Download precompiled wheels
-Go to releases and find tarball needed. Download it.
+Go to [releases (Files)](https://sourceforge.net/projects/gdal-wheels-for-linux/files/) and find tarball needed. Download it.
 
 ## Install wheels
 After downloading wheel simply install it with:
