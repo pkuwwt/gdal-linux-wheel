@@ -116,7 +116,7 @@ RUN cd /usr/local/src \
 
 ## netcdf
 RUN cd /usr/local/src \
-    && curl -f -L -O ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.6.1.tar.gz \
+    && curl -f -L -O https://github.com/user-attachments/files/16711579/netcdf-4.6.1.tar.gz \
     && tar xzf netcdf-4.6.1.tar.gz \
     && cd netcdf-4.6.1 \
     && CFLAGS="-I/usr/local/include -O2 -Wl,-S" CXXFLAGS="-I/usr/local/include -O2 -Wl,-S" LDFLAGS="-L/usr/local/lib" ./configure \
