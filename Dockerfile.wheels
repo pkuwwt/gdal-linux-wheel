@@ -6,7 +6,7 @@
 # Note well: a very limited set of format drivers are included in these
 # wheels. See the GDAL configuration below for details.
 
-FROM quay.io/pypa/manylinux1_x86_64
+FROM quay.io/pypa/manylinux2014_x86_64
 
 RUN sed -i 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf
 #    && sed -i 's/mirrorlist/#mirrorlist/' /etc/yum.repos.d/CentOS-Base.repo 
