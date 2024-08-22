@@ -54,7 +54,7 @@ RUN mkdir -p /src \
 # Install geos
 RUN mkdir -p /src \
     && cd /src \
-    && curl -f -L -O http://download.osgeo.org/geos/geos-3.8.1.tar.bz2 \
+    && /usr/bin/curl -f -L -O http://download.osgeo.org/geos/geos-3.8.1.tar.bz2 \
     && tar jxf geos-3.8.1.tar.bz2 \
     && cd /src/geos-3.8.1 \
     && CFLAGS="-O2 -Wl,-S" CXXFLAGS="-O2 -Wl,-S" ./configure \
@@ -65,7 +65,7 @@ RUN mkdir -p /src \
 # Install jasper
 RUN mkdir -p /src \
     && cd /src \
-    && curl -f -L -O http://download.osgeo.org/gdal/jasper-1.900.1.uuid.tar.gz \
+    && /usr/bin/curl -f -L -O http://download.osgeo.org/gdal/jasper-1.900.1.uuid.tar.gz \
     && tar xzf jasper-1.900.1.uuid.tar.gz \
     && cd /src/jasper-1.900.1.uuid \
     && ./configure --disable-debug --enable-shared \
@@ -76,7 +76,7 @@ RUN mkdir -p /src \
 # proj4
 RUN mkdir -p /src \
     && cd /src \
-    && curl -f -L -O http://download.osgeo.org/proj/proj-7.1.0.tar.gz \
+    && /usr/bin/curl -f -L -O http://download.osgeo.org/proj/proj-7.1.0.tar.gz \
     && tar xzf proj-7.1.0.tar.gz \
     && cd /src/proj-7.1.0 \
     && ./configure CFLAGS="-O2 -Wl,-S" \
@@ -86,7 +86,7 @@ RUN mkdir -p /src \
 
 # cmake
 RUN cd /usr/local/src \
-    && curl -f -L -O http://www.cmake.org/files/v3.12/cmake-3.12.4.tar.gz \
+    && /usr/bin/curl -f -L -O http://www.cmake.org/files/v3.12/cmake-3.12.4.tar.gz \
     && tar xzf cmake-3.12.4.tar.gz \
     && cd cmake-3.12.4 \
     && ./bootstrap --prefix=/usr/local/cmake \
@@ -95,7 +95,7 @@ RUN cd /usr/local/src \
 # openjpeg
 RUN mkdir -p /src \
     && cd /src \
-    && curl -f -L -O https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz \
+    && /usr/bin/curl -f -L -O https://github.com/uclouvain/openjpeg/archive/v2.3.1.tar.gz \
     && tar xzf v2.3.1.tar.gz \
     && cd /src/openjpeg-2.3.1 \
     && mkdir -p build \
@@ -107,34 +107,34 @@ RUN mkdir -p /src \
 
 # hdf
 RUN cd /usr/local/src \
-    && curl -f -L -O https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz \
+    && /usr/bin/curl -f -L -O https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz \
     && tar xzf hdf5-1.12.0.tar.gz \
     && cd hdf5-1.12.0 \
     && ./configure --prefix=/usr/local --enable-shared --enable-build-mode=production CFLAGS="-O2 -Wl,-S" \
     && make -j 4 \
     && make install
 
-## netcdf
-RUN cd /usr/local/src \
-    && curl -f -L -O https://github.com/user-attachments/files/16711579/netcdf-4.6.1.tar.gz \
-    && tar xzf netcdf-4.6.1.tar.gz \
-    && cd netcdf-4.6.1 \
-    && CFLAGS="-I/usr/local/include -O2 -Wl,-S" CXXFLAGS="-I/usr/local/include -O2 -Wl,-S" LDFLAGS="-L/usr/local/lib" ./configure \
-    && make -j 4 \
-    && make install
-
 ## expat
 RUN cd /usr/local/src \
-    && curl -f -L -O https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.bz2 \
+    && /usr/bin/curl -f -L -O https://mirror.ghproxy.com/https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.bz2 \
     && tar xjf expat-2.2.9.tar.bz2 \
     && cd expat-2.2.9 \
     && CFLAGS="-O2 -Wl,-S" ./configure --prefix=/usr/local \
     && make -j 4 \
     && make install
 
+## netcdf
+RUN cd /usr/local/src \
+    && /usr/bin/curl -f -L -O https://github.com/user-attachments/files/16711579/netcdf-4.6.1.tar.gz \
+    && tar xzf netcdf-4.6.1.tar.gz \
+    && cd netcdf-4.6.1 \
+    && CFLAGS="-I/usr/local/include -O2 -Wl,-S" CXXFLAGS="-I/usr/local/include -O2 -Wl,-S" LDFLAGS="-L/usr/local/lib" ./configure \
+    && make -j 4 \
+    && make install
+
 ## webp
 RUN cd /usr/local/src \
-    && curl -f -L -O https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz \
+    && /usr/bin/curl -f -L -O https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz \
     && tar xzf libwebp-1.1.0.tar.gz \
     && cd libwebp-1.1.0 \
     && CFLAGS="-O2 -Wl,-S" ./configure --prefix=/usr/local \
@@ -145,7 +145,7 @@ RUN cd /usr/local/src \
 RUN mkdir -p /src \
     && mkdir -p /install/gdal \
     && cd /src \
-    && curl -f -L -O http://download.osgeo.org/gdal/3.1.4/gdal-3.1.4.tar.gz \
+    && /usr/bin/curl -f -L -O http://download.osgeo.org/gdal/3.1.4/gdal-3.1.4.tar.gz \
     && tar xzf gdal-3.1.4.tar.gz \
     && cd /src/gdal-3.1.4 \
     && CFLAGS="-O2 -Wl,-S" CXXFLAGS="-O2 -Wl,-S" ./configure --prefix=/install/gdal \
